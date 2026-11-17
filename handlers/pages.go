@@ -3,9 +3,11 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"slices"
 	"time"
 
 	"datadex-f1/api"
+	"datadex-f1/collection"
 )
 
 // home : page d'accueil, présente l'univers F1 et la saison en cours.
@@ -52,18 +54,31 @@ func nextRace(races []api.Race, now time.Time) (api.Race, bool) {
 	return api.Race{}, false
 }
 
-// drivers : collection de tous les pilotes.
+// drivers : collection de tous les pilotes, avec filtres cumulables.
 func (a *App) drivers(w http.ResponseWriter, r *http.Request) {
 	all, err := a.api.AllDrivers()
 	if err != nil {
 		a.apiError(w, err)
 		return
 	}
+
+	filters := collection.ParseDriverFilters(r.URL.Query())
+	nationalities := collection.Nationalities(all)
+	// Une nationalité inconnue dans l'URL est ignorée.
+	if !slices.Contains(nationalities, filters.Nationality) {
+		filters.Nationality = ""
+	}
+	filtered := collection.FilterDrivers(all, filters)
+
 	a.render(w, http.StatusOK, "drivers", data{
-		"Title":   "Pilotes",
-		"Active":  "drivers",
-		"Drivers": all,
-		"Total":   len(all),
+		"Title":         "Pilotes",
+		"Active":        "drivers",
+		"Drivers":       filtered,
+		"Total":         len(all),
+		"Count":         len(filtered),
+		"Filters":       filters,
+		"Nationalities": nationalities,
+		"Decades":       collection.Decades(all),
 	})
 }
 

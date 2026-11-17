@@ -2,10 +2,73 @@
 <section class="page-head">
   <p class="eyebrow">Collection</p>
   <h1>Tous les pilotes</h1>
-  <p class="lead">{{.Total}} pilotes ont pris le départ d'un Grand Prix de Formule 1.</p>
+  <p class="lead">{{.Total}} pilotes ont pris le départ d'un Grand Prix de Formule 1. Combinez les filtres pour trouver ceux qui vous intéressent.</p>
 </section>
 
+{{$f := .Filters}}
+<form class="card filters" action="/pilotes" method="get">
+  <div class="field">
+    <label for="q">Nom / code</label>
+    <input id="q" type="search" name="q" value="{{$f.Query}}" placeholder="Ex : Leclerc, HAM" maxlength="80">
+  </div>
+  <div class="field">
+    <label for="nationalite">Nationalité</label>
+    <select id="nationalite" name="nationalite">
+      <option value="">Toutes</option>
+      {{range .Nationalities}}<option value="{{.}}" {{if eq . $f.Nationality}}selected{{end}}>{{flag .}} {{natFR .}}</option>{{end}}
+    </select>
+  </div>
+  <div class="field">
+    <label for="decennie">Né dans les années</label>
+    <select id="decennie" name="decennie">
+      <option value="">Toutes</option>
+      {{range .Decades}}<option value="{{.}}" {{if eq . $f.Decade}}selected{{end}}>{{.}}</option>{{end}}
+    </select>
+  </div>
+  <div class="field">
+    <label for="numero">Numéro permanent</label>
+    <select id="numero" name="numero">
+      <option value="">Peu importe</option>
+      <option value="avec" {{if eq $f.Number "avec"}}selected{{end}}>Avec numéro (ère moderne)</option>
+      <option value="sans" {{if eq $f.Number "sans"}}selected{{end}}>Sans numéro</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="tri">Trier par</label>
+    <select id="tri" name="tri">
+      <option value="nom" {{if eq $f.Sort "nom"}}selected{{end}}>Nom (A → Z)</option>
+      <option value="recent" {{if eq $f.Sort "recent"}}selected{{end}}>Plus jeunes d'abord</option>
+      <option value="ancien" {{if eq $f.Sort "ancien"}}selected{{end}}>Plus anciens d'abord</option>
+      <option value="numero" {{if eq $f.Sort "numero"}}selected{{end}}>Numéro</option>
+    </select>
+  </div>
+  <div class="filters-actions">
+    <button class="btn btn-primary" type="submit">Appliquer</button>
+    {{if $f.Active}}<a class="btn btn-ghost" href="/pilotes">Réinitialiser</a>{{end}}
+  </div>
+</form>
+
+<div class="results-bar">
+  <span><strong>{{.Count}}</strong> pilote(s) trouvé(s)</span>
+  {{if $f.Active}}
+  <div class="active-filters">
+    {{if $f.Query}}<span class="chip">« {{$f.Query}} »</span>{{end}}
+    {{if $f.Nationality}}<span class="chip">{{flag $f.Nationality}} {{natFR $f.Nationality}}</span>{{end}}
+    {{if $f.Decade}}<span class="chip">Années {{$f.Decade}}</span>{{end}}
+    {{if $f.Number}}<span class="chip">{{if eq $f.Number "avec"}}Avec{{else}}Sans{{end}} numéro</span>{{end}}
+  </div>
+  {{end}}
+</div>
+
+{{if .Drivers}}
 <div class="grid">
   {{range .Drivers}}{{template "driver-card" .}}{{end}}
 </div>
+{{else}}
+<div class="empty">
+  <h2>Aucun pilote ne correspond</h2>
+  <p>Essayez de retirer un filtre : la combinaison choisie est trop restrictive.</p>
+  <a class="btn btn-ghost" href="/pilotes">Réinitialiser les filtres</a>
+</div>
+{{end}}
 {{end}}
