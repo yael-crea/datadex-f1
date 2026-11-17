@@ -1,0 +1,20 @@
+# Exécutables
+*.exe
+*.exe~
+*.out
+datadex-f1
+/bin/
+
+# Données générées à l'exécution (liste de favoris locale)
+data/favoris.json
+data/*.tmp
+
+# Secrets éventuels
+.env
+*.key
+
+# Éditeurs / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
