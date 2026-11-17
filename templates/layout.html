@@ -53,6 +53,36 @@
 </body>
 </html>{{end}}
 
+{{/* Choix du nombre d'éléments par page : simple formulaire GET, sans JavaScript.
+     Les champs cachés conservent la recherche et les filtres en cours. */}}
+{{define "per-page"}}
+<form class="per-page" action="{{.PagerAction}}" method="get">
+  {{range $key, $values := .PagerParams}}{{range $values}}<input type="hidden" name="{{$key}}" value="{{.}}">{{end}}{{end}}
+  <label for="parpage">Afficher</label>
+  <select id="parpage" name="parpage">
+    {{$current := .Pager.PerPage}}
+    {{range .Pager.Options}}<option value="{{.}}" {{if eq . $current}}selected{{end}}>{{.}}</option>{{end}}
+  </select>
+  <span>par page</span>
+  <button class="btn btn-ghost btn-small" type="submit">OK</button>
+</form>
+{{end}}
+
+{{define "pagination"}}
+{{with .Pager}}{{if gt .TotalPages 1}}
+<nav class="pagination" aria-label="Pagination">
+  {{if .PrevURL}}<a href="{{.PrevURL}}" rel="prev">← Préc.</a>{{else}}<span class="disabled">← Préc.</span>{{end}}
+  {{range .Links}}
+    {{if .Ellipsis}}<span class="ellipsis">…</span>
+    {{else if .Current}}<span class="current" aria-current="page">{{.Number}}</span>
+    {{else}}<a href="{{.URL}}">{{.Number}}</a>{{end}}
+  {{end}}
+  {{if .NextURL}}<a href="{{.NextURL}}" rel="next">Suiv. →</a>{{else}}<span class="disabled">Suiv. →</span>{{end}}
+</nav>
+<p class="pagination-info muted">Page {{.Page}} sur {{.TotalPages}} · éléments {{.From}} à {{.To}} sur {{.TotalItems}}</p>
+{{end}}{{end}}
+{{end}}
+
 {{define "driver-card"}}
 <article class="card driver-card">
   <a class="card-link" href="/pilotes/{{.DriverID}}">

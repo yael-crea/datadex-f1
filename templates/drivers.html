@@ -50,6 +50,7 @@
 
 <div class="results-bar">
   <span><strong>{{.Count}}</strong> pilote(s) trouvé(s)</span>
+  {{template "per-page" .}}
   {{if $f.Active}}
   <div class="active-filters">
     {{if $f.Query}}<span class="chip">« {{$f.Query}} »</span>{{end}}
@@ -64,6 +65,7 @@
 <div class="grid">
   {{range .Drivers}}{{template "driver-card" .}}{{end}}
 </div>
+{{template "pagination" .}}
 {{else}}
 <div class="empty">
   <h2>Aucun pilote ne correspond</h2>
