@@ -9,6 +9,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -31,8 +33,9 @@ type Client struct {
 	baseURL string
 	ttl     time.Duration
 
-	mu    sync.Mutex
-	cache map[string]cacheEntry
+	mu        sync.Mutex
+	cache     map[string]cacheEntry
+	pathLocks map[string]*sync.Mutex
 
 	rateMu   sync.Mutex
 	lastCall time.Time
@@ -44,20 +47,39 @@ type cacheEntry struct {
 	expires time.Time
 }
 
-// NewClient crée un client prêt à l'emploi.
+// NewClient crée un client prêt à l'emploi. La variable d'environnement
+// F1_API_URL permet de changer l'adresse de l'API (utile pour tester le
+// comportement du site quand l'API est hors ligne).
 func NewClient() *Client {
+	base := BaseURL
+	if custom := os.Getenv("F1_API_URL"); custom != "" {
+		base = strings.TrimRight(custom, "/")
+	}
 	return &Client{
-		http:     &http.Client{Timeout: 10 * time.Second},
-		baseURL:  BaseURL,
-		ttl:      time.Hour,
-		cache:    make(map[string]cacheEntry),
-		minDelay: 300 * time.Millisecond,
+		http:      &http.Client{Timeout: 10 * time.Second},
+		baseURL:   base,
+		ttl:       time.Hour,
+		cache:     make(map[string]cacheEntry),
+		pathLocks: make(map[string]*sync.Mutex),
+		minDelay:  400 * time.Millisecond,
 	}
 }
 
 // get renvoie le corps JSON brut de l'URL demandée.
 // Ordre de priorité : cache valide > appel réseau > cache périmé (secours).
 func (c *Client) get(path string) ([]byte, error) {
+	// Un verrou par URL : si deux visiteurs demandent la même ressource en
+	// même temps, un seul appel part vers l'API, l'autre attend le cache.
+	c.mu.Lock()
+	lock, ok := c.pathLocks[path]
+	if !ok {
+		lock = &sync.Mutex{}
+		c.pathLocks[path] = lock
+	}
+	c.mu.Unlock()
+	lock.Lock()
+	defer lock.Unlock()
+
 	c.mu.Lock()
 	entry, inCache := c.cache[path]
 	c.mu.Unlock()
@@ -83,8 +105,25 @@ func (c *Client) get(path string) ([]byte, error) {
 	return body, nil
 }
 
-// fetchRemote fait réellement l'appel HTTP, en espaçant les requêtes.
+// maxRetries : nombre de nouvelles tentatives si l'API répond 429.
+const maxRetries = 3
+
+// fetchRemote appelle l'API ; en cas de code 429 (trop de requêtes),
+// on patiente puis on réessaie au lieu d'afficher tout de suite une erreur.
 func (c *Client) fetchRemote(path string) ([]byte, error) {
+	for attempt := 1; ; attempt++ {
+		body, err := c.doRequest(path)
+		if !errors.Is(err, ErrRateLimited) || attempt > maxRetries {
+			return body, err
+		}
+		wait := time.Duration(attempt) * 2 * time.Second // 2 s, 4 s, 6 s
+		log.Printf("api: 429 sur %s, nouvelle tentative dans %s", path, wait)
+		time.Sleep(wait)
+	}
+}
+
+// doRequest fait réellement l'appel HTTP, en espaçant les requêtes.
+func (c *Client) doRequest(path string) ([]byte, error) {
 	c.rateMu.Lock()
 	if wait := c.minDelay - time.Since(c.lastCall); wait > 0 {
 		time.Sleep(wait)
