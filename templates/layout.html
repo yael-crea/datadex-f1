@@ -21,7 +21,7 @@
         <a href="/pilotes" {{if eq .Active "drivers"}}class="active"{{end}}>Pilotes</a>
         <a href="/ecuries" {{if eq .Active "teams"}}class="active"{{end}}>Écuries</a>
         <a href="/calendrier" {{if eq .Active "calendar"}}class="active"{{end}}>Calendrier</a>
-        <a href="/favoris" {{if eq .Active "favorites"}}class="active"{{end}}>Favoris</a>
+        <a href="/favoris" {{if eq .Active "favorites"}}class="active"{{end}}>Favoris{{if .FavCount}} <span class="badge">{{.FavCount}}</span>{{end}}</a>
         <a href="/a-propos" {{if eq .Active "about"}}class="active"{{end}}>À propos</a>
       </nav>
       <form class="header-search" action="/recherche" method="get" role="search">
@@ -97,5 +97,23 @@
       <p class="driver-meta muted">Né en {{.BirthYear}}</p>
     </div>
   </a>
+  <div class="card-actions">{{template "fav-button" .}}</div>
 </article>
+{{end}}
+
+{{/* Bouton favori : formulaire POST, aucune donnée n'est gérée en JavaScript. */}}
+{{define "fav-button"}}
+{{if .IsFav}}
+<form action="/favoris/supprimer" method="post">
+  <input type="hidden" name="id" value="{{.DriverID}}">
+  <input type="hidden" name="retour" value="{{.Return}}">
+  <button class="btn btn-small fav-btn is-fav" type="submit" title="Retirer des favoris">★ Favori</button>
+</form>
+{{else}}
+<form action="/favoris/ajouter" method="post">
+  <input type="hidden" name="id" value="{{.DriverID}}">
+  <input type="hidden" name="retour" value="{{.Return}}">
+  <button class="btn btn-small btn-ghost fav-btn" type="submit" title="Ajouter aux favoris">☆ Ajouter</button>
+</form>
+{{end}}
 {{end}}

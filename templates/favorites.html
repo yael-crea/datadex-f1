@@ -1,0 +1,48 @@
+{{define "content"}}
+<section class="page-head">
+  <p class="eyebrow">Ma grille</p>
+  <h1>Pilotes favoris</h1>
+  <p class="lead">Votre grille de légende, partagée par tous les visiteurs du site et sauvegardée sur le serveur.</p>
+</section>
+
+{{with .Message}}<div class="alert alert-success" role="status">{{.}}</div>{{end}}
+
+{{if .Favorites}}
+<div class="results-bar">
+  <span><strong>{{len .Favorites}}</strong> pilote(s) dans la grille</span>
+  <form action="/favoris/vider" method="post">
+    <button class="btn btn-danger btn-small" type="submit">Vider la liste</button>
+  </form>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Pilote</th><th>Nationalité</th><th>Naissance</th><th>Ajouté le</th><th class="num">Action</th></tr></thead>
+    <tbody>
+    {{range $i, $f := .Favorites}}
+      <tr>
+        <td class="pos">{{if $f.Number}}{{$f.Number}}{{else}}—{{end}}</td>
+        <td><a href="/pilotes/{{$f.ID}}"><strong>{{$f.FamilyName}}</strong> {{$f.GivenName}}</a> {{if $f.Code}}<span class="tag">{{$f.Code}}</span>{{end}}</td>
+        <td>{{flag $f.Nationality}} {{natFR $f.Nationality}}</td>
+        <td class="muted">{{dateFR $f.DateOfBirth}}</td>
+        <td class="muted">{{$f.AddedAt.Format "02/01/2006 15:04"}}</td>
+        <td class="num">
+          <form action="/favoris/supprimer" method="post">
+            <input type="hidden" name="id" value="{{$f.ID}}">
+            <input type="hidden" name="retour" value="/favoris">
+            <button class="btn btn-danger btn-small" type="submit">Retirer</button>
+          </form>
+        </td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+{{else}}
+<div class="empty">
+  <h2>Votre grille est vide</h2>
+  <p>Ajoutez des pilotes avec le bouton « ☆ Ajouter » depuis la collection ou leur fiche.</p>
+  <a class="btn btn-primary" href="/pilotes">Parcourir les pilotes</a>
+</div>
+{{end}}
+{{end}}

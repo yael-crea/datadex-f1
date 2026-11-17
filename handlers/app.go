@@ -12,11 +12,13 @@ import (
 	"time"
 
 	"datadex-f1/api"
+	"datadex-f1/favorites"
 )
 
 // App regroupe les dépendances partagées par toutes les pages.
 type App struct {
 	api       *api.Client
+	favs      *favorites.Store
 	templates map[string]*template.Template
 }
 
@@ -24,11 +26,11 @@ type App struct {
 type data map[string]any
 
 // pages liste les templates : chacun est combiné avec layout.html.
-var pages = []string{"home", "drivers", "driver", "search", "error"}
+var pages = []string{"home", "drivers", "driver", "search", "favorites", "error"}
 
 // New charge tous les templates et prépare l'application.
-func New(client *api.Client, templateDir string) (*App, error) {
-	app := &App{api: client, templates: make(map[string]*template.Template)}
+func New(client *api.Client, favs *favorites.Store, templateDir string) (*App, error) {
+	app := &App{api: client, favs: favs, templates: make(map[string]*template.Template)}
 	for _, name := range pages {
 		t, err := template.New("layout.html").Funcs(templateFuncs).ParseFiles(
 			filepath.Join(templateDir, "layout.html"),
@@ -51,6 +53,10 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /pilotes", a.drivers)
 	mux.HandleFunc("GET /pilotes/{id}", a.driverDetail)
 	mux.HandleFunc("GET /recherche", a.search)
+	mux.HandleFunc("GET /favoris", a.favoritesPage)
+	mux.HandleFunc("POST /favoris/ajouter", a.addFavorite)
+	mux.HandleFunc("POST /favoris/supprimer", a.removeFavorite)
+	mux.HandleFunc("POST /favoris/vider", a.clearFavorites)
 
 	// Toute autre URL : page 404 personnalisée.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +77,7 @@ func (a *App) render(w http.ResponseWriter, status int, name string, d data) {
 		d = data{}
 	}
 	d["Year"] = time.Now().Year()
+	d["FavCount"] = len(a.favs.IDs())
 	for _, key := range []string{"Active", "Query"} {
 		if _, ok := d[key]; !ok {
 			d[key] = ""
@@ -137,4 +144,21 @@ func logRequests(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		log.Printf("%s %s (%s)", r.Method, r.URL.RequestURI(), time.Since(start).Round(time.Millisecond))
 	})
+}
+
+// driverCard est un pilote enrichi des infos nécessaires au bouton favori.
+type driverCard struct {
+	api.Driver
+	IsFav  bool
+	Return string // page où revenir après l'ajout/la suppression
+}
+
+// cards prépare les cartes des pilotes affichés sur la page courante.
+func (a *App) cards(drivers []api.Driver, r *http.Request) []driverCard {
+	favIDs := a.favs.IDs()
+	out := make([]driverCard, len(drivers))
+	for i, d := range drivers {
+		out[i] = driverCard{Driver: d, IsFav: favIDs[d.DriverID], Return: r.URL.RequestURI()}
+	}
+	return out
 }

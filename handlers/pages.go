@@ -78,7 +78,7 @@ func (a *App) drivers(w http.ResponseWriter, r *http.Request) {
 	a.render(w, http.StatusOK, "drivers", data{
 		"Title":         "Pilotes",
 		"Active":        "drivers",
-		"Drivers":       pageItems,
+		"Drivers":       a.cards(pageItems, r),
 		"Total":         len(all),
 		"Count":         len(filtered),
 		"Filters":       filters,
@@ -150,5 +150,7 @@ func (a *App) driverDetail(w http.ResponseWriter, r *http.Request) {
 		"Active": "drivers",
 		"Driver": driver,
 		"Stats":  stats,
+		"IsFav":  a.favs.IDs()[driver.DriverID],
+		"Return": r.URL.RequestURI(),
 	})
 }
