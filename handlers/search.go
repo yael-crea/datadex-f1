@@ -44,7 +44,7 @@ func (a *App) search(w http.ResponseWriter, r *http.Request) {
 		collection.ParsePage(q), collection.ParsePerPage(q), "/recherche", params)
 
 	d["Title"] = "Recherche : " + query
-	d["Drivers"] = pageItems
+	d["Drivers"] = a.cards(pageItems, r)
 	d["Pager"] = pager
 	d["PagerAction"] = "/recherche"
 	d["PagerParams"] = params

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"datadex-f1/api"
+	"datadex-f1/favorites"
 	"datadex-f1/handlers"
 )
 
@@ -20,7 +21,12 @@ func main() {
 	// Préchargement en arrière-plan : le serveur démarre tout de suite.
 	go client.Preload()
 
-	app, err := handlers.New(client, "templates")
+	favs, err := favorites.NewStore("data/favoris.json")
+	if err != nil {
+		log.Fatalf("impossible d'ouvrir les favoris : %v", err)
+	}
+
+	app, err := handlers.New(client, favs, "templates")
 	if err != nil {
 		log.Fatalf("impossible de charger les templates : %v", err)
 	}

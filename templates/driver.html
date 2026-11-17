@@ -9,6 +9,19 @@
     <h1>{{.GivenName}} <span class="accent">{{.FamilyName}}</span></h1>
     <p class="lead">Né le {{dateFR .DateOfBirth}}{{with age .DateOfBirth}} ({{.}} ans){{end}}</p>
     <div class="hero-actions">
+      {{if $.IsFav}}
+      <form action="/favoris/supprimer" method="post">
+        <input type="hidden" name="id" value="{{.DriverID}}">
+        <input type="hidden" name="retour" value="{{$.Return}}">
+        <button class="btn fav-btn is-fav" type="submit">★ Dans vos favoris — retirer</button>
+      </form>
+      {{else}}
+      <form action="/favoris/ajouter" method="post">
+        <input type="hidden" name="id" value="{{.DriverID}}">
+        <input type="hidden" name="retour" value="{{$.Return}}">
+        <button class="btn btn-primary" type="submit">☆ Ajouter aux favoris</button>
+      </form>
+      {{end}}
       {{if .URL}}<a class="btn btn-ghost" href="{{.URL}}" target="_blank" rel="noopener">Wikipédia ↗</a>{{end}}
     </div>
   </div>
