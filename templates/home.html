@@ -1,0 +1,57 @@
+{{define "content"}}
+<section class="hero">
+  <div class="hero-text">
+    <p class="eyebrow">Depuis 1950 · Tous les Grands Prix</p>
+    <h1>Le paddock entier,<br><span class="accent">dans votre poche.</span></h1>
+    <p class="lead">DataDex F1 rassemble chaque pilote et chaque écurie de l'histoire de la Formule 1. Explorez les carrières, comparez les époques et constituez votre grille de légende.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/pilotes">Explorer les pilotes</a>
+      <a class="btn btn-ghost" href="/calendrier">Voir le calendrier</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-value">{{if .DriverCount}}{{.DriverCount}}{{else}}—{{end}}</span><span class="stat-label">pilotes</span></div>
+    <div class="stat"><span class="stat-value">{{if .TeamCount}}{{.TeamCount}}{{else}}—{{end}}</span><span class="stat-label">écuries</span></div>
+    <div class="stat"><span class="stat-value">{{if .RaceCount}}{{.RaceCount}}{{else}}—{{end}}</span><span class="stat-label">GP cette saison</span></div>
+  </div>
+</section>
+
+{{with .NextRace}}
+<section class="next-race card">
+  <p class="eyebrow">Prochain départ · Manche {{.Round}}</p>
+  <h2>{{.RaceName}}</h2>
+  <p>{{.Circuit.CircuitName}} — {{.Circuit.Location.Locality}}, {{.Circuit.Location.Country}}</p>
+  <p class="next-race-date">{{dateFR .Date}}</p>
+</section>
+{{end}}
+
+<section class="section">
+  <div class="section-head">
+    <h2>Classement pilotes {{.Season}}</h2>
+    {{if .Round}}<span class="muted">après la manche {{.Round}}</span>{{end}}
+  </div>
+  {{if .StandingsError}}
+    <div class="alert">Le classement est momentanément indisponible : l'API F1 ne répond pas.</div>
+  {{else if .Standings}}
+  <div class="table-wrap">
+    <table class="standings">
+      <thead><tr><th>Pos.</th><th>Pilote</th><th>Écurie</th><th class="num">Victoires</th><th class="num">Points</th></tr></thead>
+      <tbody>
+      {{range .Standings}}
+        <tr>
+          <td class="pos">{{.Position}}</td>
+          <td><span class="team-bar" style="background: {{safeCSS (teamColor .Team.ConstructorID)}}"></span>
+            {{flag .Driver.Nationality}} <a href="/pilotes/{{.Driver.DriverID}}"><strong>{{.Driver.FamilyName}}</strong> {{.Driver.GivenName}}</a></td>
+          <td class="muted">{{.Team.Name}}</td>
+          <td class="num">{{.Wins}}</td>
+          <td class="num points">{{.Points}}</td>
+        </tr>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+    <p class="muted">La saison n'a pas encore commencé.</p>
+  {{end}}
+</section>
+{{end}}
