@@ -1,0 +1,71 @@
+{{define "layout"}}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} · DataDex F1</title>
+  <meta name="description" content="DataDex F1 : l'encyclopédie des pilotes et écuries de Formule 1 depuis 1950.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="logo" aria-label="Accueil DataDex F1">
+        <span class="logo-mark">DD</span><span class="logo-text">DataDex<strong>F1</strong></span>
+      </a>
+      <nav class="main-nav" aria-label="Navigation principale">
+        <a href="/" {{if eq .Active "home"}}class="active"{{end}}>Accueil</a>
+        <a href="/pilotes" {{if eq .Active "drivers"}}class="active"{{end}}>Pilotes</a>
+        <a href="/ecuries" {{if eq .Active "teams"}}class="active"{{end}}>Écuries</a>
+        <a href="/calendrier" {{if eq .Active "calendar"}}class="active"{{end}}>Calendrier</a>
+        <a href="/favoris" {{if eq .Active "favorites"}}class="active"{{end}}>Favoris</a>
+        <a href="/a-propos" {{if eq .Active "about"}}class="active"{{end}}>À propos</a>
+      </nav>
+      <form class="header-search" action="/recherche" method="get" role="search">
+        <input type="search" name="q" placeholder="Rechercher un pilote, une écurie…" aria-label="Rechercher" value="{{.Query}}">
+        <button type="submit" aria-label="Lancer la recherche">⌕</button>
+      </form>
+    </div>
+  </header>
+
+  <main class="container main">
+    {{template "content" .}}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <span class="logo-text">DataDex<strong>F1</strong></span>
+        <p>L'encyclopédie des pilotes et écuries de Formule 1, de 1950 à {{.Year}}.</p>
+      </div>
+      <nav aria-label="Liens du pied de page">
+        <a href="/pilotes">Pilotes</a>
+        <a href="/ecuries">Écuries</a>
+        <a href="/recherche">Recherche</a>
+        <a href="/a-propos">À propos</a>
+      </nav>
+      <p class="footer-credit">Données : <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">API Jolpica-F1</a> (ex-Ergast) · Projet DataDex · Ynov Campus Aix · {{.Year}}</p>
+    </div>
+  </footer>
+</body>
+</html>{{end}}
+
+{{define "driver-card"}}
+<article class="card driver-card">
+  <a class="card-link" href="/pilotes/{{.DriverID}}">
+    <div class="driver-number">{{if .PermanentNumber}}{{.PermanentNumber}}{{else}}{{.Initials}}{{end}}</div>
+    <div class="driver-info">
+      <p class="driver-given">{{.GivenName}}</p>
+      <h3 class="driver-family">{{.FamilyName}}</h3>
+      <p class="driver-meta">
+        <span title="{{natFR .Nationality}}">{{flag .Nationality}} {{natFR .Nationality}}</span>
+        {{if .Code}}<span class="tag">{{.Code}}</span>{{end}}
+      </p>
+      <p class="driver-meta muted">Né en {{.BirthYear}}</p>
+    </div>
+  </a>
+</article>
+{{end}}

@@ -1,0 +1,43 @@
+{{define "content"}}
+{{with .Driver}}
+<nav class="breadcrumb" aria-label="Fil d'Ariane"><a href="/pilotes">Pilotes</a> / {{.FullName}}</nav>
+
+<section class="driver-hero">
+  <div class="driver-hero-number">{{if .PermanentNumber}}{{.PermanentNumber}}{{else}}{{.Initials}}{{end}}</div>
+  <div class="driver-hero-text">
+    <p class="eyebrow">{{flag .Nationality}} {{natFR .Nationality}}{{if .Code}} · {{.Code}}{{end}}</p>
+    <h1>{{.GivenName}} <span class="accent">{{.FamilyName}}</span></h1>
+    <p class="lead">Né le {{dateFR .DateOfBirth}}{{with age .DateOfBirth}} ({{.}} ans){{end}}</p>
+    <div class="hero-actions">
+      {{if .URL}}<a class="btn btn-ghost" href="{{.URL}}" target="_blank" rel="noopener">Wikipédia ↗</a>{{end}}
+    </div>
+  </div>
+</section>
+{{end}}
+
+{{with .Stats}}
+{{if .Partial}}<div class="alert">Certaines statistiques n'ont pas pu être chargées depuis l'API F1.</div>{{end}}
+<section class="stats-grid">
+  <div class="card stat"><span class="stat-value">{{.Races}}</span><span class="stat-label">Grands Prix</span></div>
+  <div class="card stat"><span class="stat-value">{{.Wins}}</span><span class="stat-label">victoires</span></div>
+  <div class="card stat"><span class="stat-value">{{.WinRate}}%</span><span class="stat-label">taux de victoire</span></div>
+  <div class="card stat"><span class="stat-value">{{len .Seasons}}</span><span class="stat-label">saisons ({{.FirstSeason}}–{{.LastSeason}})</span></div>
+</section>
+
+<section class="section">
+  <h2>Écuries</h2>
+  {{if .Teams}}
+  <ul class="chips">
+    {{range .Teams}}<li class="chip"><span class="team-dot" style="background: {{safeCSS (teamColor .ConstructorID)}}"></span>{{.Name}} <span class="muted">{{flag .Nationality}}</span></li>{{end}}
+  </ul>
+  {{else}}<p class="muted">Aucune écurie trouvée.</p>{{end}}
+</section>
+
+<section class="section">
+  <h2>Saisons disputées</h2>
+  {{if .Seasons}}
+  <ul class="chips">{{range .Seasons}}<li class="chip">{{.Season}}</li>{{end}}</ul>
+  {{else}}<p class="muted">Aucune saison trouvée.</p>{{end}}
+</section>
+{{end}}
+{{end}}

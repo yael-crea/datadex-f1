@@ -1,0 +1,11 @@
+{{define "content"}}
+<section class="page-head">
+  <p class="eyebrow">Collection</p>
+  <h1>Tous les pilotes</h1>
+  <p class="lead">{{.Total}} pilotes ont pris le départ d'un Grand Prix de Formule 1.</p>
+</section>
+
+<div class="grid">
+  {{range .Drivers}}{{template "driver-card" .}}{{end}}
+</div>
+{{end}}

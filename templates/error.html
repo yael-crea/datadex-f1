@@ -1,0 +1,11 @@
+{{define "content"}}
+<section class="error-page">
+  <p class="error-code">{{.Status}}</p>
+  <h1>{{.Heading}}</h1>
+  <p class="lead">{{.Message}}</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="/">Retour à l'accueil</a>
+    <a class="btn btn-ghost" href="/pilotes">Voir les pilotes</a>
+  </div>
+</section>
+{{end}}
