@@ -48,6 +48,11 @@ PORT=3000 go run .          # macOS / Linux / Git Bash
 $env:PORT=3000; go run .    # PowerShell
 ```
 
+Pour simuler une **API hors ligne** et voir les pages d'erreur :
+```bash
+F1_API_URL=http://127.0.0.1:1 go run .
+```
+
 Pour compiler un exécutable :
 ```bash
 go build -o datadex-f1 .

@@ -15,7 +15,7 @@
     <select id="nationalite" name="nationalite">
       <option value="">Toutes</option>
       {{$sel := .Nationality}}
-      {{range .Nationalities}}<option value="{{.}}" {{if eq . $sel}}selected{{end}}>{{flag .}} {{natFR .}}</option>{{end}}
+      {{range .Nationalities}}<option value="{{.}}" {{if eq . $sel}}selected{{end}}>{{natFR .}}</option>{{end}}
     </select>
   </div>
   <div class="filters-actions">
