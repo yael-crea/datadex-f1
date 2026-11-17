@@ -9,7 +9,7 @@ import (
 // response reproduit l'enveloppe "MRData" commune à toutes les réponses.
 type response struct {
 	MRData struct {
-		Total            string `json:"total"`
+		Total            string                      `json:"total"`
 		DriverTable      *struct{ Drivers []Driver } `json:"DriverTable"`
 		ConstructorTable *struct {
 			Constructors []Constructor
