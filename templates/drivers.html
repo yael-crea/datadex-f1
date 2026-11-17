@@ -15,7 +15,7 @@
     <label for="nationalite">Nationalité</label>
     <select id="nationalite" name="nationalite">
       <option value="">Toutes</option>
-      {{range .Nationalities}}<option value="{{.}}" {{if eq . $f.Nationality}}selected{{end}}>{{flag .}} {{natFR .}}</option>{{end}}
+      {{range .Nationalities}}<option value="{{.}}" {{if eq . $f.Nationality}}selected{{end}}>{{natFR .}}</option>{{end}}
     </select>
   </div>
   <div class="field">

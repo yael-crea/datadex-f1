@@ -91,7 +91,7 @@
       <p class="driver-given">{{.GivenName}}</p>
       <h3 class="driver-family">{{.FamilyName}}</h3>
       <p class="driver-meta">
-        <span title="{{natFR .Nationality}}">{{flag .Nationality}} {{natFR .Nationality}}</span>
+        <span class="nat">{{flag .Nationality}} {{natFR .Nationality}}</span>
         {{if .Code}}<span class="tag">{{.Code}}</span>{{end}}
       </p>
       <p class="driver-meta muted">Né en {{.BirthYear}}</p>

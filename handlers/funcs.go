@@ -60,17 +60,16 @@ var nationalities = map[string]nationalityInfo{
 	"Venezuelan":        {"VE", "Vénézuélienne"},
 }
 
-// flag transforme un code ISO (ex : "FR") en emoji drapeau 🇫🇷.
-func flag(nationality string) string {
+// flag renvoie une petite image du drapeau (les emojis drapeaux ne
+// s'affichent pas sous Windows). Images fournies par flagcdn.com.
+func flag(nationality string) template.HTML {
 	info, ok := nationalities[nationality]
 	if !ok || len(info.ISO) != 2 {
 		return "🏁"
 	}
-	var b strings.Builder
-	for _, c := range info.ISO {
-		b.WriteRune(0x1F1E6 + (c - 'A'))
-	}
-	return b.String()
+	iso := strings.ToLower(info.ISO)
+	return template.HTML(`<img class="flag" src="https://flagcdn.com/w40/` + iso +
+		`.png" width="20" height="15" alt="" loading="lazy">`)
 }
 
 // natFR traduit une nationalité en français (repli : valeur d'origine).
