@@ -22,9 +22,13 @@
   </div>
   {{else}}
   <section class="section">
-    <div class="section-head"><h2>Pilotes</h2><span class="muted">{{.DriverCount}} résultat(s)</span></div>
+    <div class="results-bar">
+      <div class="section-head"><h2>Pilotes</h2><span class="muted">{{.DriverCount}} résultat(s)</span></div>
+      {{if .Drivers}}{{template "per-page" .}}{{end}}
+    </div>
     {{if .Drivers}}
       <div class="grid">{{range .Drivers}}{{template "driver-card" .}}{{end}}</div>
+      {{template "pagination" .}}
     {{else}}<p class="muted">Aucun pilote trouvé.</p>{{end}}
   </section>
 

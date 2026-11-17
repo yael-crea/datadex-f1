@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 
 	"datadex-f1/collection"
@@ -37,8 +38,16 @@ func (a *App) search(w http.ResponseWriter, r *http.Request) {
 	foundDrivers := collection.SearchDrivers(drivers, query)
 	foundTeams := collection.SearchConstructors(teams, query)
 
+	q := r.URL.Query()
+	params := url.Values{"q": {query}}
+	pageItems, pager := collection.Paginate(foundDrivers,
+		collection.ParsePage(q), collection.ParsePerPage(q), "/recherche", params)
+
 	d["Title"] = "Recherche : " + query
-	d["Drivers"] = foundDrivers
+	d["Drivers"] = pageItems
+	d["Pager"] = pager
+	d["PagerAction"] = "/recherche"
+	d["PagerParams"] = params
 	d["DriverCount"] = len(foundDrivers)
 	d["Teams"] = foundTeams
 	d["TeamCount"] = len(foundTeams)

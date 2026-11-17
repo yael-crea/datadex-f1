@@ -70,15 +70,23 @@ func (a *App) drivers(w http.ResponseWriter, r *http.Request) {
 	}
 	filtered := collection.FilterDrivers(all, filters)
 
+	q := r.URL.Query()
+	params := filters.Values()
+	pageItems, pager := collection.Paginate(filtered,
+		collection.ParsePage(q), collection.ParsePerPage(q), "/pilotes", params)
+
 	a.render(w, http.StatusOK, "drivers", data{
 		"Title":         "Pilotes",
 		"Active":        "drivers",
-		"Drivers":       filtered,
+		"Drivers":       pageItems,
 		"Total":         len(all),
 		"Count":         len(filtered),
 		"Filters":       filters,
 		"Nationalities": nationalities,
 		"Decades":       collection.Decades(all),
+		"Pager":         pager,
+		"PagerAction":   "/pilotes",
+		"PagerParams":   params,
 	})
 }
 
