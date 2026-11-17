@@ -1,0 +1,62 @@
+{{define "content"}}
+<section class="page-head">
+  <p class="eyebrow">Le projet</p>
+  <h1>À propos de DataDex F1</h1>
+  <p class="lead">DataDex F1 est un projet individuel réalisé à Ynov Campus Aix dans le cadre du module « DataDex : fetch &amp; show ». Le but : récupérer des données depuis une API REST et les manipuler entièrement à la main en Go.</p>
+</section>
+
+<div class="prose">
+  <h2>Le concept</h2>
+  <p>Le site est une encyclopédie de la Formule 1 : les <strong>885 pilotes</strong> et les <strong>214 écuries</strong> de l'histoire depuis 1950, le classement et le calendrier de la saison en cours. Chaque pilote a une fiche avec ses statistiques de carrière : départs, victoires, saisons et écuries.</p>
+
+  <h2>Les fonctionnalités</h2>
+  <ul>
+    <li><strong>Recherche</strong> sur le prénom, le nom, le code à trois lettres, le numéro et la nationalité des pilotes, et sur le nom des écuries. Elle ignore les accents et les majuscules.</li>
+    <li><strong>Filtres cumulables</strong> sur la collection des pilotes : nationalité, décennie de naissance et présence d'un numéro permanent, plus un tri.</li>
+    <li><strong>Pagination</strong> avec choix de 10, 20, 30 ou 50 éléments par page. Elle conserve la recherche et les filtres en cours.</li>
+    <li><strong>Favoris</strong> partagés par tous les visiteurs et enregistrés dans <code>data/favoris.json</code>.</li>
+    <li><strong>Bonus</strong> : collection des écuries, calendrier de la saison avec le prochain Grand Prix, classement sur l'accueil, cache des réponses de l'API et pages d'erreur personnalisées.</li>
+  </ul>
+
+  <h2>Technologies</h2>
+  <p>Go (bibliothèque standard uniquement : <code>net/http</code>, <code>html/template</code>, <code>encoding/json</code>), HTML et CSS. <strong>Aucune ligne de JavaScript</strong> : la recherche, les filtres, la pagination et les favoris passent par des formulaires traités côté serveur.</p>
+
+  <h2>L'API utilisée</h2>
+  <p><a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica-F1</a> est le successeur de l'API Ergast. Elle est REST, renvoie du JSON et ne demande pas de clé. Endpoints exploités :</p>
+  <ul>
+    <li><code>GET /drivers.json</code> : tous les pilotes</li>
+    <li><code>GET /drivers/{id}.json</code> : un pilote</li>
+    <li><code>GET /drivers/{id}/seasons.json</code> : ses saisons</li>
+    <li><code>GET /drivers/{id}/constructors.json</code> : ses écuries</li>
+    <li><code>GET /drivers/{id}/results.json</code> et <code>/results/1.json</code> : ses départs et ses victoires</li>
+    <li><code>GET /constructors.json</code> : toutes les écuries</li>
+    <li><code>GET /current/driverstandings.json</code> : le classement en cours</li>
+    <li><code>GET /current/races.json</code> : le calendrier en cours</li>
+  </ul>
+
+  <h2>Retour d'expérience (FAQ)</h2>
+  <div class="faq">
+    <details open>
+      <summary>Quelle a été la principale difficulté, et comment l'ai-je surmontée ?</summary>
+      <p>La difficulté principale venait des <strong>limites de l'API</strong>. Jolpica ne renvoie que 100 pilotes au maximum par requête, et elle limite à 4 requêtes par seconde et 500 par heure. Or le sujet impose de filtrer et paginer moi-même : il me faut donc <em>toute</em> la collection en mémoire.</p>
+      <p>Ma solution est en deux parties. D'abord, une boucle qui télécharge les 9 « pages » de l'API au démarrage (<code>AllDrivers</code>). Ensuite, un <strong>cache mémoire d'une heure</strong> dans <code>api/client.go</code>, avec un délai minimum de 300 ms entre deux appels. Résultat : après le premier chargement, toutes les pages s'affichent sans rappeler l'API. Et si l'API tombe, le site sert la dernière copie connue au lieu de planter.</p>
+    </details>
+    <details>
+      <summary>De quelle fonctionnalité suis-je le plus fier, et comment l'ai-je implémentée ?</summary>
+      <p>La <strong>pagination générique</strong>. La fonction <code>Paginate[T any]</code> du fichier <code>collection/pagination.go</code> utilise les génériques de Go : elle marche aussi bien pour les pilotes que pour les écuries.</p>
+      <p>Elle découpe la liste, corrige les valeurs absurdes (<code>?page=999</code> mène à la dernière page, <code>?parpage=7</code> revient à 20) et construit des liens qui <em>conservent les filtres</em>. Par exemple, sur « pilotes français, page 2, 10 par page », le lien suivant est <code>/pilotes?nationalite=French&amp;page=3&amp;parpage=10</code>. Elle affiche aussi des « … » quand il y a beaucoup de pages, comme les 89 pages de pilotes à 10 par page.</p>
+    </details>
+    <details>
+      <summary>Qu'ai-je appris sur les API et sur Go, et quelles ressources m'ont aidé ?</summary>
+      <p><strong>Sur les API</strong> : lire une documentation, tester les endpoints dans Postman, comprendre l'enveloppe JSON <code>MRData</code> et ses champs <code>total</code>, <code>limit</code> et <code>offset</code>. J'ai aussi appris à gérer les codes HTTP 404, 429 (trop de requêtes) et 5xx. Une astuce utile : pour compter les victoires, on peut appeler <code>/results/1.json?limit=1</code> et lire seulement le champ <code>total</code>.</p>
+      <p><strong>Sur Go</strong> : décoder du JSON dans des structs avec des tags, utiliser les nouveaux motifs de routes de Go 1.22 (<code>GET /pilotes/{id}</code>), protéger un fichier partagé avec un <code>sync.Mutex</code>, et écrire dans un fichier temporaire puis le renommer pour ne pas corrompre les favoris.</p>
+      <p><strong>Ressources</strong> : la documentation officielle (<a href="https://pkg.go.dev/net/http" target="_blank" rel="noopener">pkg.go.dev</a>), <a href="https://gobyexample.com" target="_blank" rel="noopener">Go by Example</a>, le dépôt GitHub de Jolpica-F1 et Postman.</p>
+    </details>
+    <details>
+      <summary>Que ferais-je différemment si c'était à refaire ?</summary>
+      <p>J'écrirais des <strong>tests unitaires</strong> (<code>go test</code>) dès le début pour la recherche, les filtres et la pagination. Ce sont des fonctions pures, très faciles à tester, et cela m'aurait évité des vérifications manuelles.</p>
+      <p>J'enregistrerais aussi le cache sur le disque pour qu'il survive à un redémarrage du serveur. Enfin, je réfléchirais plus tôt aux statistiques de la fiche pilote : l'API n'a pas d'endpoint « palmarès » direct, donc il faut combiner plusieurs appels.</p>
+    </details>
+  </div>
+</div>
+{{end}}
