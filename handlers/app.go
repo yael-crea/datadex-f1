@@ -24,7 +24,7 @@ type App struct {
 type data map[string]any
 
 // pages liste les templates : chacun est combiné avec layout.html.
-var pages = []string{"home", "drivers", "driver", "error"}
+var pages = []string{"home", "drivers", "driver", "search", "error"}
 
 // New charge tous les templates et prépare l'application.
 func New(client *api.Client, templateDir string) (*App, error) {
@@ -50,6 +50,7 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /{$}", a.home)
 	mux.HandleFunc("GET /pilotes", a.drivers)
 	mux.HandleFunc("GET /pilotes/{id}", a.driverDetail)
+	mux.HandleFunc("GET /recherche", a.search)
 
 	// Toute autre URL : page 404 personnalisée.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

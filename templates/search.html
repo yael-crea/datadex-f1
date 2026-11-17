@@ -1,0 +1,41 @@
+{{define "content"}}
+<section class="page-head">
+  <p class="eyebrow">Recherche</p>
+  <h1>{{if .Query}}Résultats pour « <span class="accent">{{.Query}}</span> »{{else}}Rechercher dans le paddock{{end}}</h1>
+  <p class="lead">Cherchez un pilote par prénom, nom, code (HAM, VER…), numéro ou nationalité, ou une écurie par son nom.</p>
+</section>
+
+<form class="card filters" action="/recherche" method="get" role="search">
+  <div class="field" style="grid-column: span 2">
+    <label for="q">Votre recherche</label>
+    <input id="q" type="search" name="q" value="{{.Query}}" placeholder="Ex : Senna, Ferrari, VER, British…" maxlength="80" autofocus>
+  </div>
+  <div class="filters-actions"><button class="btn btn-primary" type="submit">Rechercher</button></div>
+</form>
+
+{{if .Searched}}
+  {{if and (eq .DriverCount 0) (eq .TeamCount 0)}}
+  <div class="empty">
+    <h2>Aucun résultat</h2>
+    <p>Aucun pilote ni aucune écurie ne correspond à « {{.Query}} ». Vérifiez l'orthographe ou essayez un nom plus court.</p>
+    <a class="btn btn-ghost" href="/pilotes">Parcourir tous les pilotes</a>
+  </div>
+  {{else}}
+  <section class="section">
+    <div class="section-head"><h2>Pilotes</h2><span class="muted">{{.DriverCount}} résultat(s)</span></div>
+    {{if .Drivers}}
+      <div class="grid">{{range .Drivers}}{{template "driver-card" .}}{{end}}</div>
+    {{else}}<p class="muted">Aucun pilote trouvé.</p>{{end}}
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Écuries</h2><span class="muted">{{.TeamCount}} résultat(s)</span></div>
+    {{if .Teams}}
+    <ul class="chips">
+      {{range .Teams}}<li class="chip"><span class="team-dot" style="background: {{safeCSS (teamColor .ConstructorID)}}"></span>{{.Name}}&nbsp;<span class="muted">{{flag .Nationality}}</span></li>{{end}}
+    </ul>
+    {{else}}<p class="muted">Aucune écurie trouvée.</p>{{end}}
+  </section>
+  {{end}}
+{{end}}
+{{end}}
