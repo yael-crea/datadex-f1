@@ -1,0 +1,50 @@
+{{define "content"}}
+<section class="page-head">
+  <p class="eyebrow">Collection</p>
+  <h1>Les écuries</h1>
+  <p class="lead">{{.Total}} constructeurs ont aligné au moins une voiture en championnat du monde.</p>
+</section>
+
+<form class="card filters" action="/ecuries" method="get">
+  <div class="field">
+    <label for="q">Nom de l'écurie</label>
+    <input id="q" type="search" name="q" value="{{.TeamQuery}}" placeholder="Ex : Ferrari, Lotus" maxlength="80">
+  </div>
+  <div class="field">
+    <label for="nationalite">Nationalité</label>
+    <select id="nationalite" name="nationalite">
+      <option value="">Toutes</option>
+      {{$sel := .Nationality}}
+      {{range .Nationalities}}<option value="{{.}}" {{if eq . $sel}}selected{{end}}>{{flag .}} {{natFR .}}</option>{{end}}
+    </select>
+  </div>
+  <div class="filters-actions">
+    <button class="btn btn-primary" type="submit">Appliquer</button>
+    {{if or .TeamQuery .Nationality}}<a class="btn btn-ghost" href="/ecuries">Réinitialiser</a>{{end}}
+  </div>
+</form>
+
+<div class="results-bar">
+  <span><strong>{{.Count}}</strong> écurie(s)</span>
+  {{template "per-page" .}}
+</div>
+
+{{if .Teams}}
+<div class="grid">
+  {{range .Teams}}
+  <article class="card team-card" style="--team: {{safeCSS (teamColor .ConstructorID)}}">
+    <h3>{{.Name}}</h3>
+    <p class="muted">{{flag .Nationality}} {{natFR .Nationality}}</p>
+    {{if .URL}}<a class="team-link" href="{{.URL}}" target="_blank" rel="noopener">Histoire sur Wikipédia ↗</a>{{end}}
+  </article>
+  {{end}}
+</div>
+{{template "pagination" .}}
+{{else}}
+<div class="empty">
+  <h2>Aucune écurie trouvée</h2>
+  <p>Modifiez votre recherche ou retirez le filtre de nationalité.</p>
+  <a class="btn btn-ghost" href="/ecuries">Réinitialiser</a>
+</div>
+{{end}}
+{{end}}

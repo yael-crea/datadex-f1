@@ -1,0 +1,33 @@
+{{define "content"}}
+<section class="page-head">
+  <p class="eyebrow">Saison {{.Season}}</p>
+  <h1>Calendrier</h1>
+  <p class="lead">{{len .Races}} Grands Prix au programme · {{.Done}} déjà disputé(s).</p>
+</section>
+
+{{if .Races}}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Manche</th><th>Grand Prix</th><th>Circuit</th><th>Lieu</th><th>Date</th><th>Statut</th></tr></thead>
+    <tbody>
+    {{range .Races}}
+      <tr class="{{if eq .Status "passe"}}is-past{{else if eq .Status "prochain"}}is-next{{end}}">
+        <td class="pos">{{.Round}}</td>
+        <td><strong>{{.RaceName}}</strong></td>
+        <td class="muted">{{.Circuit.CircuitName}}</td>
+        <td>{{.Circuit.Location.Locality}}, {{.Circuit.Location.Country}}</td>
+        <td>{{dateFR .Date}}</td>
+        <td>
+          {{if eq .Status "passe"}}<span class="tag">Terminé</span>
+          {{else if eq .Status "prochain"}}<span class="tag tag-live">Prochain</span>
+          {{else}}<span class="tag">À venir</span>{{end}}
+        </td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+{{else}}
+<div class="empty"><h2>Calendrier non publié</h2><p>Le calendrier de la saison n'est pas encore disponible.</p></div>
+{{end}}
+{{end}}
