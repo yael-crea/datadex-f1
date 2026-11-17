@@ -26,7 +26,7 @@ type App struct {
 type data map[string]any
 
 // pages liste les templates : chacun est combiné avec layout.html.
-var pages = []string{"home", "drivers", "driver", "search", "favorites", "error"}
+var pages = []string{"home", "drivers", "driver", "search", "favorites", "teams", "calendar", "about", "error"}
 
 // New charge tous les templates et prépare l'application.
 func New(client *api.Client, favs *favorites.Store, templateDir string) (*App, error) {
@@ -53,6 +53,9 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /pilotes", a.drivers)
 	mux.HandleFunc("GET /pilotes/{id}", a.driverDetail)
 	mux.HandleFunc("GET /recherche", a.search)
+	mux.HandleFunc("GET /ecuries", a.teams)
+	mux.HandleFunc("GET /calendrier", a.calendar)
+	mux.HandleFunc("GET /a-propos", a.about)
 	mux.HandleFunc("GET /favoris", a.favoritesPage)
 	mux.HandleFunc("POST /favoris/ajouter", a.addFavorite)
 	mux.HandleFunc("POST /favoris/supprimer", a.removeFavorite)
